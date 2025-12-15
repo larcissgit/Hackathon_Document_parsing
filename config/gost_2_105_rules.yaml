@@ -1,0 +1,47 @@
+version: "1.0"
+standard: "ГОСТ 2.105-95"
+
+checks:
+  required_sections:
+    enabled: true
+    sections:
+      - "Введение"
+      - "Назначение"
+      - "Технические характеристики"
+      - "Заключение"
+    order_matters: true
+
+  section_numbering:
+    enabled: true
+    pattern: "^\\d+(\\.\\d+)*\\s+.+$"
+    max_level: 3
+
+  page_numbering:
+    enabled: true
+    skip_pages: ["титульный", "содержание"]
+    start_from: 3
+
+  tables:
+    enabled: true
+    caption_pattern: "^Таблица\\s+\\d+\\.\\d+"
+    required: ["наименование"]
+
+  figures:
+    enabled: true
+    caption_pattern: "^Рисунок\\s+\\d+\\.\\d+"
+    position: "bottom"
+
+  formulas:
+    enabled: true
+    numbering_pattern: "\\(\\d+\\.\\d+\\)"
+    alignment: "right"
+
+  appendices:
+    enabled: true
+    pattern: "^ПРИЛОЖЕНИЕ\\s+[А-Я]"
+    start_new_page: true
+
+validation:
+  allowed_formats: [".docx", ".pdf", ".rtf"]
+  max_file_size_mb: 50
+  encoding: "utf-8"

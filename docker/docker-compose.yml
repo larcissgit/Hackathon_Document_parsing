@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  autoverifier:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./data:/app/data:ro
+      - ./reports:/app/reports
+    environment:
+      - LOG_LEVEL=INFO
+    command: >
+      python -m src.main
+      --document /app/data/sample.docx
+      --rules /app/config/gost_2_105_rules.yaml
+      --output /app/reports/report.json
+
+  tests:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command: pytest tests/ -v
+    volumes:
+      - .:/app
