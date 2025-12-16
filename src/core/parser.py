@@ -1,7 +1,3 @@
-"""
-Парсер документов. Извлекает структуру из текста.
-Работает с уже прочитанным текстом, не занимается чтением файлов.
-"""
 import re
 from src.models import Document
 from src.utils.file_reader import FileReader
@@ -19,11 +15,13 @@ class Parser:
         print(f"[Parser] Начинаю обработку файла: {file_path}")
 
         # 1. Чтение файла
-        text = self.file_reader.read_file(file_path)
+        text, error_message = self.file_reader.read_file(file_path)
 
         # 2. Если файл не найден или не прочитан, создаём демо-текст
         if text is None or text == "":
-            print("[Parser] Файл не найден или пустой, использую демо-текст")
+            if error_message:
+                print(f"[Parser] Ошибка чтения файла: {error_message}")
+            print("[Parser] Не удалось экспортировать текст из файла, использую демо-текст")
             text = self.file_reader.create_demo_text()
 
         # 3. Извлечение структуры

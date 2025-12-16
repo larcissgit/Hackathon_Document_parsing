@@ -1,72 +1,80 @@
 # src/checks/table_checker.py
-from src.checks.base_check import BaseCheck
-from src.models import Document, CheckResult, CheckStatus, ValidationError
 import re
+from src.checks.base_checker import BaseCheck
+from src.models import Document, CheckResult, CheckStatus, ValidationError
 
 
 class TableCheck(BaseCheck):
-    """Проверка оформления таблиц по ГОСТ"""
+    """Проверка 4: Оформление таблиц"""
 
     def __init__(self):
         super().__init__(
             check_id="table_format",
-            check_name="Проверка оформления таблиц"
+            check_name="Оформление таблиц"
         )
-        self.table_pattern = r'Таблица\s+\d+[\.\d+]*'
-        self.caption_prefix = ''
-        self.must_be_referenced = True
+        # Значения по умолчанию
+        self.caption_pattern = r'^Таблица\s+\d+(\.\d+)*'
+        self.require_caption = True
 
     def set_rules(self, rules: dict):
-        """Загружает правила для проверки таблиц"""
         super().set_rules(rules)
-        if rules and 'gost_2_105' in rules:
-            gost_rules = rules['gost_2_105']
-            table_rules = gost_rules.get('tables', {})
-            self.caption_prefix = table_rules.get('caption_prefix', 'Таблица')
-            self.must_be_referenced = table_rules.get('must_be_referenced', True)
+        self.caption_pattern = self._safe_get_rule(
+            'gost_2_105.tables.caption_pattern',
+            self.caption_pattern
+        )
+        self.require_caption = self._safe_get_rule(
+            'gost_2_105.tables.require_caption',
+            self.require_caption
+        )
 
     def run(self, document: Document) -> CheckResult:
-        """Проверяет оформление таблиц в документе"""
+        """Проверяет формат подписи таблиц, наличие наименования и ссылок"""
         errors = []
+        text = document.raw_text
 
-        # Ищем все упоминания таблиц в тексте
-        table_matches = list(re.finditer(self.table_pattern, document.raw_text))
+        # Ищем все упоминания таблиц
+        table_pattern = r'(?i)таблица\s+\d+(\.\d+)*'
+        table_matches = list(re.finditer(table_pattern, text))
 
         if not table_matches:
-            # Если таблиц нет - проверка пройдена
             return self._create_result(CheckStatus.PASSED)
 
-        print(f"[Проверка таблиц] Найдено таблиц: {len(table_matches)}")
-
         # Проверяем каждую найденную таблицу
-        for i, match in enumerate(table_matches):
+        for match in table_matches:
             table_text = match.group(0)
 
-            # Проверяем формат: "Таблица X.Y" или "Таблица X"
-            if not re.match(r'Таблица\s+\d+(\.\d+)?$', table_text):
-                error = ValidationError(
+            # Проверяем формат подписи
+            if not re.match(self.caption_pattern, table_text, re.IGNORECASE):
+                errors.append(ValidationError(
                     check_name=self.check_name,
                     description=f"Некорректный формат подписи таблицы: '{table_text}'",
-                    recommendation="Используйте формат: 'Таблица X.Y' или 'Таблица X'",
-                    gost_reference="ГОСТ 2.105, раздел 5.3",
-                    element=table_text
-                )
-                errors.append(error)
+                    recommendation="Используйте формат: 'Таблица 1.1' или 'Таблица 1'",
+                    gost_reference="ГОСТ 2.105, раздел 5.3"
+                ))
 
-        # Проверяем наличие подписей под таблицами
-        lines = document.raw_text.split('\n')
-        for i, line in enumerate(lines):
-            if line.strip().startswith('Таблица'):
-                # Проверяем, есть ли текст после подписи (название таблицы)
-                if len(line.strip()) < len('Таблица 1.1') + 3:
-                    error = ValidationError(
-                        check_name=self.check_name,
-                        description=f"Таблица без наименования: '{line.strip()}'",
-                        recommendation="Добавьте наименование после номера таблицы",
-                        gost_reference="ГОСТ 2.105, раздел 5.3",
-                        element=line.strip()
-                    )
-                    errors.append(error)
+            # Проверяем наличие наименования после номера
+            end_pos = match.end()
+            next_chars = text[end_pos:end_pos + 5].strip()
+            if self.require_caption and (not next_chars or next_chars.startswith(('.', ','))):
+                errors.append(ValidationError(
+                    check_name=self.check_name,
+                    description=f"Таблица без наименования: '{table_text}'",
+                    recommendation="Добавьте наименование после номера таблицы через тире или двоеточие",
+                    gost_reference="ГОСТ 2.105, раздел 5.3"
+                ))
+
+        # Проверяем наличие ссылок на таблицы в тексте (упрощённо)
+        for match in table_matches:
+            table_ref = match.group(0)
+            # Ищем ссылки вида "таблице 1.1" или "см. таблицу 1.1"
+            ref_pattern = rf'(?:см\.|в|по|из)\s+{re.escape(table_ref)}'
+            if not re.search(ref_pattern, text, re.IGNORECASE):
+                errors.append(ValidationError(
+                    check_name=self.check_name,
+                    description=f"Отсутствует ссылка на таблицу: '{table_ref}'",
+                    recommendation=f"Добавьте в текст ссылку на таблицу: '... в {table_ref} ...'",
+                    gost_reference="ГОСТ 2.105, раздел 5.3"
+                ))
 
         status = CheckStatus.FAILED if errors else CheckStatus.PASSED
         return self._create_result(status, errors)

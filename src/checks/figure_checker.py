@@ -1,11 +1,13 @@
 import re
-from src.checks.base_check import BaseCheck
+from src.checks.base_checker import BaseCheck
 from src.models import Document, CheckResult, CheckStatus, ValidationError
 
 
 class FigureCheck(BaseCheck):
     def __init__(self):
-        super().__init__("figure_format", "Проверка оформления рисунков")
+        super().__init__(
+            check_id="figure_format",
+            check_name="Проверка оформления рисунков")
 
     def run(self, document: Document) -> CheckResult:
         """Проверяет нумерацию и оформление рисунков"""

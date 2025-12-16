@@ -1,47 +1,80 @@
-version: "1.0"
-standard: "ГОСТ 2.105-95"
-
-checks:
+# Полная конфигурация всех 7 проверок ГОСТ 2.105
+gost_2_105:
+  # Проверка 1: Наличие и порядок разделов
   required_sections:
-    enabled: true
-    sections:
-      - "Введение"
-      - "Назначение"
-      - "Технические характеристики"
-      - "Заключение"
-    order_matters: true
+    - "Введение"
+    - "Назначение"
+    - "Технические характеристики"
 
+  # Проверка 2: Нумерация разделов и подразделов
   section_numbering:
-    enabled: true
     pattern: "^\\d+(\\.\\d+)*\\s+.+$"
     max_level: 3
 
+  # Проверка 3: Нумерация страниц
   page_numbering:
-    enabled: true
-    skip_pages: ["титульный", "содержание"]
-    start_from: 3
+    skip_pages: 2  # Титульный лист и содержание
+    require_sequential: true
 
-  tables:
-    enabled: true
-    caption_pattern: "^Таблица\\s+\\d+\\.\\d+"
-    required: ["наименование"]
+  # Проверка 4: Оформление таблиц
+  table_format:
+    caption_pattern: "^Таблица\\s+\\d+(\\.\\d+)*"
+    require_caption: true
+    require_reference: true
 
-  figures:
-    enabled: true
-    caption_pattern: "^Рисунок\\s+\\d+\\.\\d+"
-    position: "bottom"
+  # Проверка 5: Оформление рисунков
+  figure_format:
+    caption_pattern: "^Рисунок\\s+\\d+(\\.\\d+)*"
+    require_caption: true
+    require_reference: true
 
+  # Проверка 6: Оформление формул
   formulas:
-    enabled: true
-    numbering_pattern: "\\(\\d+\\.\\d+\\)"
+    numbering_pattern: "^\\((\\d+(\\.\\d+)*)\\)$"
     alignment: "right"
+    require_reference: true
 
+  # Проверка 7: Оформление приложений
   appendices:
-    enabled: true
-    pattern: "^ПРИЛОЖЕНИЕ\\s+[А-Я]"
-    start_new_page: true
+    # Основной паттерн для поиска заголовков приложений
+    pattern: "^ПРИЛОЖЕНИЕ\\s+[А-ЯA-Z\\d]"
 
-validation:
-  allowed_formats: [".docx", ".pdf", ".rtf"]
+    # Допустимые форматы обозначений
+    allowed_designations:
+      types: [ "cyrillic", "latin", "numeric" ]  # Какие типы разрешены
+      max_length: 2  # Максимальная длина обозначения (например, "А1")
+
+    # Строгость проверки
+    validation:
+      require_uppercase: true  # Требовать заглавные буквы
+      require_space: true      # Требовать пробел после "ПРИЛОЖЕНИЕ"
+      allow_dot_after: true    # Разрешить точку после обозначения
+      allow_parentheses: true  # Разрешить скобки "(обязательное)"
+
+    # Форматирование
+    require_new_page: true
+    require_reference: true
+
+
+# Настройки проверок
+check_settings:
+  enabled_checks:
+    - "required_sections"
+    - "section_numbering"
+    - "page_numbering"
+    - "table_format"
+    - "figure_format"
+    - "formulas"
+    - "appendices"
+    - "required_format"
+  
+# Дополнительные проверки (за дополнительные баллы)
+extra_checks:
+  title_page_check: false
+  text_style_check: false
+  change_log_check: false
+
+# Настройки системы
+system:
+  allowed_formats: [".txt", ".doc", ".docx", ".pdf", ".rtf"]
   max_file_size_mb: 50
-  encoding: "utf-8"

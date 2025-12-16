@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import List
 from src.models import Document, CheckResult
 from typing import Dict, Any
-from pathlib import Path
 
 
 class Reporter:

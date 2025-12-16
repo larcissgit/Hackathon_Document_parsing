@@ -1,0 +1,80 @@
+# Игнорируем всё, что не нужно копировать в Docker образ
+
+# Python
+pycache/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+*.manifest
+*.spec
+
+# PyCharm и другие IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# Виртуальные окружения
+venv/
+env/
+.venv/
+ENV/
+
+# Тестовые файлы и отчёты
+test_output/
+reports/
+*.log
+*.json
+!validation_report.json  # Исключение: пример отчёта
+
+# Временные файлы
+*.tmp
+*.temp
+*~
+
+# Системные файлы
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Конфиденциальные данные
+*.env
+.env.local
+secrets/
+keys/
+
+# Документы и примеры (опционально - можно закоммитить для демо)
+тестовый_документ.txt
+пример_документа.*
+!config/gost_rules.yaml  # Важно: конфиг нужен в образе!
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker файлы (кроме Dockerfile)
+docker-compose.override.yml
+docker-compose.prod.yml

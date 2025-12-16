@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.utils import ConfigLoader
 from src.core import Parser, Validator, Reporter
-from src.checks import SectionCheck, TableCheck  # Импортируем все проверки
+from src.checks import get_all_checks
 
 
 
@@ -54,20 +54,19 @@ def main():
         print("[2] Инициализация компонентов...")
 
     doc_parser = Parser()
-    validator = Validator()
+    validator = Validator(config)
 
-    # 3. РЕГИСТРАЦИЯ ПРОВЕРОК С ЗАГРУЗКОЙ ПРАВИЛ
+    # 3. РЕГИСТРАЦИЯ ВСЕХ ПРОВЕРОК
     if args.verbose:
         print("[3] Регистрация проверок...")
 
-    # Создаем и регистрируем проверки
-    section_check = SectionCheck()
-    section_check.set_rules(config)
-    validator.register_check(section_check)
-
-    table_check = TableCheck()
-    table_check.set_rules(config)
-    validator.register_check(table_check)
+    # Автоматически создаем все 7 проверок
+    checks = get_all_checks()
+    for check in checks:
+        validator.register_check(check)
+        if args.verbose:
+            status = "✓" if check.check_id in config.get('check_settings', {}).get('enabled_checks', []) else "✗"
+            print(f"  {status} {check.check_name}")
 
     # 4. ПАРСИНГ ДОКУМЕНТА
     if args.verbose:

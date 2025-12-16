@@ -1,56 +1,67 @@
-from typing import Any
-
-from src.checks.base_check import BaseCheck
+from src.checks.base_checker import BaseCheck
 from src.models import Document, CheckResult, CheckStatus, ValidationError
 
 
 class SectionCheck(BaseCheck):
-    """Проверка наличия обязательных разделов в документе"""
+    """Проверка 1: Наличие и порядок обязательных разделов"""
 
     def __init__(self):
         super().__init__(
             check_id="required_sections",
-            check_name="Проверка обязательных разделов"
+            check_name="Наличие и порядок разделов"
         )
-        self.required_sections = []
+        # Значения по умолчанию на случай отсутствия конфига
+        self.required_sections = ["Введение", "Назначение", "Технические характеристики"]
 
     def set_rules(self, rules: dict):
         """Загружает правила для проверки из конфига"""
         super().set_rules(rules)
-        # Извлекаем конкретные правила для этой проверки
-        if rules and 'checks' in rules:
-            gost_rules = rules['checks']
-            check: dict = gost_rules.get('required_sections', {'enabled': True,
-                'sections': ["Введение", "Назначение", "Технические характеристики"]})
-            if check.get('enabled', True):
-                self.required_sections = check.get('required_sections', [
-                "Введение", "Назначение", "Технические характеристики"])
+        # Безопасное извлечение правил с fallback на значения по умолчанию
+        self.required_sections = self._safe_get_rule(
+            'gost_2_105.required_sections',
+            self.required_sections
+        )
 
     def run(self, document: Document) -> CheckResult:
-        """Ищет обязательные разделы в тексте документа"""
+        """Проверяет наличие обязательных разделов в нужной последовательности"""
         errors = []
+        text = document.raw_text.lower()
+        lines = document.raw_text.split('\n')
 
-        # Проверяем, загружены ли правила
-        if not hasattr(self, 'required_sections'):
-            error = ValidationError(
-                check_name=self.check_name,
-                description="Правила проверки не загружены",
-                recommendation="Проверьте конфигурационный файл",
-                gost_reference="ГОСТ 2.105"
-            )
-            return self._create_result(CheckStatus.ERROR, [error])
-
-        # Простейшая логика: ищем подстроки в тексте
+        # Проверяем наличие каждого раздела
+        found_sections = {}
         for section in self.required_sections:
-            if section not in document.raw_text:
-                error = ValidationError(
+            if section.lower() in text:
+                # Находим позицию раздела
+                for i, line in enumerate(lines):
+                    if section.lower() in line.lower():
+                        found_sections[section] = i
+                        break
+
+        # Проверяем, все ли разделы найдены
+        for section in self.required_sections:
+            if section not in found_sections:
+                errors.append(ValidationError(
                     check_name=self.check_name,
                     description=f"Отсутствует обязательный раздел: '{section}'",
-                    recommendation=f"Добавьте раздел '{section}' в соответствии с ГОСТ 2.105",
-                    gost_reference="ГОСТ 2.105, разделы 4.1-4.3"
-                )
-                errors.append(error)
+                    recommendation=f"Добавьте раздел '{section}' в документ",
+                    gost_reference="ГОСТ 2.105, раздел 4.1"
+                ))
 
+        # Проверяем порядок разделов (если все найдены)
+        if len(found_sections) == len(self.required_sections):
+            sections_in_order = sorted(found_sections.items(), key=lambda x: x[1])
+            expected_order = list(zip(self.required_sections, range(len(self.required_sections))))
+
+            for (found_name, pos), (expected_name, _) in zip(sections_in_order, expected_order):
+                if found_name != expected_name:
+                    errors.append(ValidationError(
+                        check_name=self.check_name,
+                        description=f"Нарушен порядок разделов. '{found_name}' найден до '{expected_name}'",
+                        recommendation=f"Расположите разделы в порядке: {', '.join(self.required_sections)}",
+                        gost_reference="ГОСТ 2.105, раздел 4.1"
+                    ))
+                    break
 
         status = CheckStatus.FAILED if errors else CheckStatus.PASSED
         return self._create_result(status, errors)
