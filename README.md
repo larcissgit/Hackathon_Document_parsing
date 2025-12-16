@@ -29,14 +29,66 @@ python -m src.main --document путь/к/документу.docx
 
 ## 📁 Структура проекта
 
-Данный раздел будет раскрыт в следующих обновлениях, следите за новостями
+Hackathon_Document_parsing/
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml
+├── config/
+│   ├── __init__.py
+│   └── gost_2_105_rules.yaml
+├── docker/
+│   ├── docker-compose.yml
+│   └── Dockerfile
+├── docs/
+│   ├── M4 API.md
+│   └── M4 INSTALL.md
+├── files/
+│   ├── doc_test_1.doc
+│   ├── docx_test_1.docx
+│   └── original.docx
+├── src/
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── parser.py
+│   │   ├── reporter.py
+│   │   └── validator.py
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── config_loader.py
+│   │   ├── file_reader.py
+│   │   └── logger.py
+│   ├── checks/
+│   │   ├── __init__.py
+│   │   ├── appendix_checker.py
+│   │   ├── base_checker.py
+│   │   ├── figure_checker.py
+│   │   ├── format_checker.py
+│   │   ├── formula_checker.py
+│   │   ├── page_numbering_checker.py
+│   │   ├── section_checker.py
+│   │   ├── section_numbering_checker.py
+│   │   └── table_checker.py
+│   ├── __init__.py
+│   ├── main.py
+│   └── models.py
+├── tests/
+│   ├── __init__.py
+│   └── test_section_checker.py
+├── .dockerignore
+├── .gitignore
+├── .pre-commit-config.yaml
+├── Makefile
+├── pyproject.toml
+├── README.md
+├── requirements.txt
+└── uv.lock
 
 ## 👥 Команда
 ### - [Dowolny Team] - Команда парсеров
 
-- [Lar] - Тимлид
-- [SleepGod] - Раб_1
-- [Astragee] - Раб_2
+- [Lar] - Тимлид/backend
+- [SleepGod] - Архитектор/Дизайнер презентации
+- [Astragee] - DevOPS
 
 ## 📊 Метрики качества
 
