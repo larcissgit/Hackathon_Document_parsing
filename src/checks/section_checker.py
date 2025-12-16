@@ -1,3 +1,5 @@
+from typing import Any
+
 from src.checks.base_check import BaseCheck
 from src.models import Document, CheckResult, CheckStatus, ValidationError
 
@@ -16,11 +18,14 @@ class SectionCheck(BaseCheck):
         """Загружает правила для проверки из конфига"""
         super().set_rules(rules)
         # Извлекаем конкретные правила для этой проверки
-        if rules and 'gost_2_105' in rules:
-            gost_rules = rules['gost_2_105']
-            self.required_sections = gost_rules.get('required_sections', [
-                "Введение", "Назначение", "Технические характеристики"
-            ])
+        if rules and 'checks' in rules:
+            gost_rules = rules['checks']
+            check: dict = gost_rules.get('required_sections', {'enabled': True,
+                'sections': ["Введение", "Назначение", "Технические характеристики"]})
+            if check.get('enabled', True):
+                self.required_sections = check.get('required_sections', [
+                "Введение", "Назначение", "Технические характеристики"])
+            print(self.required_sections)
 
     def run(self, document: Document) -> CheckResult:
         """Ищет обязательные разделы в тексте документа"""
@@ -38,6 +43,7 @@ class SectionCheck(BaseCheck):
 
         # Простейшая логика: ищем подстроки в тексте
         for section in self.required_sections:
+            print(section)
             if section not in document.raw_text:
                 error = ValidationError(
                     check_name=self.check_name,

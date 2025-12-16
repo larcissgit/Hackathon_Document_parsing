@@ -1,4 +1,3 @@
-# src/core/parser.py
 from . import SUPPORTED_FORMATS
 from src.models import Document
 import codecs  # Добавляем модуль для работы с кодировками

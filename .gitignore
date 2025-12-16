@@ -75,7 +75,7 @@ reports/
 output/
 
 # Тестовые данные и документы
-тестовый_документ.txt
+files/test_document.txt
 sample_*.docx
 sample_*.pdf
 

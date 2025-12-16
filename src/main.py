@@ -5,6 +5,7 @@ from pathlib import Path
 # Настройка пути для импортов
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+
 from src.utils import ConfigLoader
 from src.core import Parser, Validator, Reporter
 from src.checks import SectionCheck, TableCheck  # Импортируем все проверки
@@ -19,21 +20,23 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
             Примеры использования:
-            python src/main.py документ.docx
-            python src/main.py документ.docx --config config/my_rules.yaml
-            python src/main.py документ.docx --output report.json --verbose
+            python src/main.py files/document.docx
+            python src/main.py files/document.docx --config config/my_rules.yaml
+            python src/main.py files/document.docx --output report/report_1.json --verbose
         """
     )
 
     parser.add_argument('document', help='Путь к проверяемому документу')
     parser.add_argument('--config', '-c', default='config/gost_2_105_rules.yaml',
                         help='Путь к конфигурационному файлу (по умолчанию: config/gost_rules.yaml)')
-    parser.add_argument('--output', '-o', default='validation_report.json',
+    parser.add_argument('--output', '-o', default='reports/validation_report.json',
                         help='Путь для сохранения отчета (по умолчанию: validation_report.json)')
     parser.add_argument('--verbose', '-v', action='store_true',
                         help='Подробный вывод в консоль')
 
     args = parser.parse_args()
+
+
 
     if args.verbose:
         print("=== Авто-верификатор ГОСТ 2.105 ===")
