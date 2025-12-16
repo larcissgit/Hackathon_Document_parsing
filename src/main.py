@@ -73,19 +73,19 @@ def main():
     if args.verbose:
         print(f"[4] Парсинг документа: {args.document}")
 
-    document = doc_parser.parse(args.document)
+    parsed_document = doc_parser.parse(args.document)
 
     # 5. ВАЛИДАЦИЯ
     if args.verbose:
         print("[5] Запуск проверок...")
 
-    results = validator.validate(document)
+    results = validator.validate(parsed_document)
 
     # 6. ГЕНЕРАЦИЯ И СОХРАНЕНИЕ ОТЧЕТА
     if args.verbose:
         print("[6] Генерация отчета...")
 
-    report = Reporter.generate_report(document=document, results=results)
+    report = Reporter.generate_report(document=parsed_document, results=results)
     Reporter.save_report(report_data=report, report_path=args.output)
 
     # 7. ВЫВОД СТАТИСТИКИ

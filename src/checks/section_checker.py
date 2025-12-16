@@ -25,7 +25,6 @@ class SectionCheck(BaseCheck):
             if check.get('enabled', True):
                 self.required_sections = check.get('required_sections', [
                 "Введение", "Назначение", "Технические характеристики"])
-            print(self.required_sections)
 
     def run(self, document: Document) -> CheckResult:
         """Ищет обязательные разделы в тексте документа"""
@@ -43,7 +42,6 @@ class SectionCheck(BaseCheck):
 
         # Простейшая логика: ищем подстроки в тексте
         for section in self.required_sections:
-            print(section)
             if section not in document.raw_text:
                 error = ValidationError(
                     check_name=self.check_name,
@@ -52,6 +50,7 @@ class SectionCheck(BaseCheck):
                     gost_reference="ГОСТ 2.105, разделы 4.1-4.3"
                 )
                 errors.append(error)
+
 
         status = CheckStatus.FAILED if errors else CheckStatus.PASSED
         return self._create_result(status, errors)

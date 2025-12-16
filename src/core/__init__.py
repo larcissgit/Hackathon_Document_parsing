@@ -1,6 +1,3 @@
-SUPPORTED_FORMATS = [".docx", ".pdf", ".txt"]
-
-
 from .parser import Parser
 from .validator import Validator
 from .reporter import Reporter
